@@ -15,33 +15,6 @@ st.set_page_config(
 # Custom CSS for modern styling
 st.markdown("""
 <style>
-    /* Sidebar styling and width adjustment */
-    .css-1d391kg {
-        width: 400px !important;
-        min-width: 400px !important;
-    }
-    
-    .css-1cypcdb {
-        width: 400px !important;
-        min-width: 400px !important;
-    }
-    
-    section[data-testid="stSidebar"] {
-        width: 400px !important;
-        min-width: 400px !important;
-    }
-    
-    .sidebar .sidebar-content {
-        width: 400px !important;
-        background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-    }
-    
-    /* Main content area adjustment */
-    .main .block-container {
-        max-width: calc(100% - 420px);
-        padding-left: 2rem;
-    }
-    
     .main-header {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
@@ -61,40 +34,9 @@ st.markdown("""
         margin: 1rem 0;
     }
     
-    /* Enhanced sidebar styling */
     .stSelectbox > div > div {
         border-radius: 10px;
         border: 2px solid #e6e9ef;
-        background-color: white;
-    }
-    
-    .stTextInput > div > div > input {
-        border-radius: 10px;
-        border: 2px solid #e6e9ef;
-        padding: 0.5rem;
-    }
-    
-    .stNumberInput > div > div > input {
-        border-radius: 10px;
-        border: 2px solid #e6e9ef;
-        padding: 0.5rem;
-    }
-    
-    /* Sidebar headers */
-    .sidebar h3 {
-        color: #495057;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #667eea;
-    }
-    
-    /* File uploader styling */
-    .stFileUploader > div > div {
-        border-radius: 10px;
-        border: 2px dashed #667eea;
-        background-color: #f8f9fa;
-        padding: 1rem;
     }
     
     .stButton > button {
@@ -105,7 +47,6 @@ st.markdown("""
         padding: 0.5rem 2rem;
         font-weight: 600;
         transition: all 0.3s ease;
-        width: 100%;
     }
     
     .stButton > button:hover {
@@ -126,19 +67,6 @@ st.markdown("""
     .status-good { background-color: #d1ecf1; color: #0c5460; }
     .status-warning { background-color: #fff3cd; color: #856404; }
     .status-danger { background-color: #f8d7da; color: #721c24; }
-    
-    /* Sidebar expander styling */
-    .streamlit-expanderHeader {
-        background-color: #e9ecef;
-        border-radius: 8px;
-        padding: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Better spacing for sidebar content */
-    .sidebar .element-container {
-        margin-bottom: 1rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -154,11 +82,10 @@ st.markdown("""
 
 # Role and time settings with modern sidebar configuration
 with st.sidebar:
-    st.markdown("### ⚙️ **Configuration Panel**")
-    st.markdown("---")
+    st.markdown("### ⚙️ Configuration Panel")
     
-    # Role time configuration with improved layout
-    with st.expander("🕐 **Work Schedule Settings**", expanded=False):
+    # Role time configuration
+    with st.expander("🕐 Work Schedule Settings", expanded=False):
         role_settings = {
             "SMPSMK": {"jam_masuk": "07:00", "jam_pulang": "15:00", "pulang_next_day": False},
             "ASRAMA": {"jam_masuk": "15:00", "jam_pulang": "07:00", "pulang_next_day": True},
@@ -166,30 +93,23 @@ with st.sidebar:
         }
         
         for role in role_settings:
-            st.markdown(f"#### **{role} Schedule**")
-            
-            # Use wider columns in the larger sidebar
-            col1, col2 = st.columns([1, 1])
+            st.markdown(f"**{role} Schedule**")
+            col1, col2 = st.columns(2)
             with col1:
                 role_settings[role]["jam_masuk"] = st.text_input(
-                    "⏰ Check In Time", 
-                    value=role_settings[role]["jam_masuk"], 
-                    key=f"masuk_{role}", 
-                    help=f"Start time for {role} role"
+                    "Check In", value=role_settings[role]["jam_masuk"], 
+                    key=f"masuk_{role}", help=f"Start time for {role}"
                 )
             with col2:
                 suffix = " (Next Day)" if role_settings[role]["pulang_next_day"] else ""
                 role_settings[role]["jam_pulang"] = st.text_input(
-                    f"🏁 Check Out Time{suffix}", 
-                    value=role_settings[role]["jam_pulang"], 
-                    key=f"pulang_{role}", 
-                    help=f"End time for {role} role"
+                    f"Check Out{suffix}", value=role_settings[role]["jam_pulang"], 
+                    key=f"pulang_{role}", help=f"End time for {role}"
                 )
-            st.markdown("---")
+            st.divider()
     
-    # Date range selection with enhanced styling
-    st.markdown("### 📅 **Period Selection**")
-    st.markdown("*Choose the analysis period for attendance data*")
+    # Date range selection with modern styling
+    st.markdown("### 📅 Period Selection")
     
     bulan_map = {
         "January": 1, "February": 2, "March": 3, "April": 4,
@@ -197,74 +117,20 @@ with st.sidebar:
         "September": 9, "October": 10, "November": 11, "December": 12
     }
     
-    # Better month selection layout
-    st.markdown("**📈 Analysis Period:**")
     col1, col2 = st.columns(2)
     with col1:
-        bulan_awal = st.selectbox(
-            "�️ Start Month", 
-            list(bulan_map.keys()), 
-            index=5,
-            help="Select the starting month for analysis"
-        )
+        bulan_awal = st.selectbox("📅 Start Month", list(bulan_map.keys()), index=5)
     with col2:
-        bulan_akhir = st.selectbox(
-            "� End Month", 
-            list(bulan_map.keys()), 
-            index=6,
-            help="Select the ending month for analysis"
-        )
+        bulan_akhir = st.selectbox("📅 End Month", list(bulan_map.keys()), index=6)
     
-    # Year selection with better styling
-    tahun = st.number_input(
-        "🗓️ **Analysis Year**", 
-        value=datetime.now().year, 
-        step=1, 
-        min_value=2020, 
-        max_value=2030,
-        help="Select the year for attendance analysis"
-    )
+    tahun = st.number_input("🗓️ Year", value=datetime.now().year, step=1, min_value=2020, max_value=2030)
     
-    st.markdown("---")
-    
-    # File upload section with enhanced design
-    st.markdown("### 📂 **File Upload**")
-    st.markdown("*Upload your Excel attendance file*")
-    
+    st.markdown("### 📂 File Upload")
     uploaded_file = st.file_uploader(
-        "📋 **Select Attendance File (.xlsx)**", 
+        "Upload attendance file (.xlsx)", 
         type=["xlsx"],
-        help="Upload your Excel attendance file for comprehensive analysis",
-        label_visibility="collapsed"
+        help="Upload your Excel attendance file for analysis"
     )
-    
-    if uploaded_file:
-        st.success("✅ File uploaded successfully!")
-        st.info(f"📄 **File:** {uploaded_file.name}")
-    
-    st.markdown("---")
-    
-    # Quick help section
-    with st.expander("ℹ️ **Quick Help**", expanded=False):
-        st.markdown("""
-        **📋 File Requirements:**
-        - Excel format (.xlsx)
-        - Standard attendance template
-        - Employee names in column A
-        - Roles in column B
-        - Daily attendance data starting from column C
-        
-        **🕐 Time Formats Supported:**
-        - HH:MM (e.g., 07:30)
-        - HH.MM.SS (e.g., 07.30.00)
-        - Multiple entries per cell
-        
-        **📊 Analysis Features:**
-        - Automatic role detection
-        - Performance scoring
-        - Detailed breakdowns
-        - Export capabilities
-        """)
 
 def get_performance_badge(issues_count, total_days):
     """Generate performance badge based on attendance issues"""
