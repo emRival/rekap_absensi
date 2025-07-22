@@ -1,11 +1,32 @@
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-st.title("📊 Rekapitulasi Absensi + Telat Masuk & Pulang Cepat (Dengan Toleransi Waktu)")
+st.title("🚀 DASHBOARD SMART ATTENDANCE MONITORING SYSTEM")
+st.markdown("### 📊 Analisis Kehadiran & Ketepatan Waktu dengan Toleransi Dinamis")
 
-uploaded_file = st.file_uploader("Upload file absensi (.xlsx)", type=["xlsx"])
+# Role and time settings - removed MANAGEMENT and added next day indicator for ASRAMA and MUSYRIF
+role_settings = {
+    "SMPSMK": {"jam_masuk": "07:00", "jam_pulang": "15:00", "pulang_next_day": False},
+    "ASRAMA": {"jam_masuk": "15:00", "jam_pulang": "07:00", "pulang_next_day": True},
+    "MUSYRIF": {"jam_masuk": "15:00", "jam_pulang": "07:00", "pulang_next_day": True}
+}
+
+# Role time configuration UI
+with st.expander("⚙️ Konfigurasi Jam Kerja"):
+    st.subheader("Pengaturan Jam Kerja per Role")
+    for role in role_settings:
+        col1, col2 = st.columns(2)
+        with col1:
+            role_settings[role]["jam_masuk"] = st.text_input(
+                f"Jam Masuk {role}", value=role_settings[role]["jam_masuk"], key=f"masuk_{role}"
+            )
+        with col2:
+            role_settings[role]["jam_pulang"] = st.text_input(
+                f"Jam Pulang {role}" + (" (H+1)" if role_settings[role]["pulang_next_day"] else ""), 
+                value=role_settings[role]["jam_pulang"], 
+                key=f"pulang_{role}"
+            )
 
 bulan_map = {
     "Januari": 1, "Februari": 2, "Maret": 3, "April": 4,
@@ -20,6 +41,8 @@ with col2:
     bulan_akhir = st.selectbox("📅 Pilih Bulan Akhir", list(bulan_map.keys()), index=6)
 
 tahun = st.number_input("🗓️ Tahun", value=datetime.now().year, step=1)
+
+uploaded_file = st.file_uploader("Upload file absensi (.xlsx)", type=["xlsx"])
 
 def parse_jam(cell):
     if pd.isna(cell): return []
@@ -62,6 +85,11 @@ if uploaded_file:
 
     for idx, (nama, role, baris_absen) in enumerate(zip(nama_guru, role_guru, data_absensi)):
         role = role.strip().upper() if isinstance(role, str) else "SMPSMK"
+        
+        # Set default role if not in predefined roles
+        if role not in role_settings:
+            role = "SMPSMK"
+            
         tdk_absen, absen_kurang, absen_bermasalah = [], [], []
         telat_masuk, pulang_cepat = [], []
 
@@ -77,12 +105,15 @@ if uploaded_file:
                     tdk_absen.append(tgl)
                 else:
                     masuk, pulang = valid_jam_smpsmk(jam_list)
+                    jam_masuk_batas = role_settings[role]["jam_masuk"]
+                    jam_pulang_batas = role_settings[role]["jam_pulang"]
+                    
                     if not masuk or not pulang:
                         absen_kurang.append(tgl)
                     else:
-                        if masuk > "07:00":
+                        if masuk > jam_masuk_batas:
                             telat_masuk.append(tgl)
-                        if pulang < "15:00":
+                        if pulang < jam_pulang_batas:
                             pulang_cepat.append(tgl)
                     if len(jam_list) > 2:
                         absen_bermasalah.append(tgl)
@@ -94,16 +125,20 @@ if uploaded_file:
                 masuk = next((jam for jam in reversed(jam_hari_ini) if jam >= "00:00"), None)
                 pulang = next((jam for jam in jam_besok if jam >= "00:00"), None)
 
+                jam_masuk_batas = role_settings[role]["jam_masuk"]
+                jam_pulang_batas = role_settings[role]["jam_pulang"]
+
                 if not jam_hari_ini and not jam_besok:
                     tdk_absen.append(tgl)
                 elif not masuk or not pulang:
                     absen_kurang.append(tgl)
                 else:
-                    if masuk > "15:00":
+                    if masuk > jam_masuk_batas:
                         telat_masuk.append(tgl)
-                    if pulang < "07:00":
+                    if pulang < jam_pulang_batas:
                         pulang_cepat.append(tgl)
-                if len(jam_hari_ini) + len(jam_besok) > 2:
+                # Allow 2 entries per day (instead of 2 total across both days)
+                if len(jam_hari_ini) > 2 or len(jam_besok) > 2:
                     absen_bermasalah.append(tgl)
 
         hasil.append({
